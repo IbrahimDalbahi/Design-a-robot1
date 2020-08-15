@@ -1,0 +1,16 @@
+
+  <head>
+     <title>First Task</title>
+  </head>
+  <body>
+    <div class="group">
+       <button class="btn">Right</button>
+       <button class="btn">Lift</button>
+       <button class="btn">Backward</button>
+       <button class="btn">Forward</button>
+       <br><br>
+       <button class="stop">Stop</button>
+    </div>   
+  
+  </body>
+</HTML>
