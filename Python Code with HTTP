@@ -1,0 +1,74 @@
+from lxml import html, etree
+from rich import print
+from rich.console import Console
+from rich.table import Column, Table
+import requests
+console = Console()
+
+def greet():
+	console.print('Hello,\nSiteReader is a simple tool that allow you to search specific web page for certain keywords and return the results. You can search for multiple keywords along with capabilities to search only inside specific selectors ex: h1 and div\n', style='bold red')
+	
+def get_url():
+    url = input('Please type in webpage URL: ')
+    if not url.strip():
+    	console.print('no page link was provided! Exiting..', style='bold red')
+    	quit()
+    return url
+
+def get_keywords():
+	keywords = input('\n\nPlease type keyword or multiples separated by comma ,\nKeywords: ')
+	if not keywords.strip():
+	   	console.print('no keywords were provided! Exiting..', style='bold red')
+	   	quit()
+	   	
+	return keywords.split(',')
+	
+def get_selectors():
+	selectors = input('\n\nPlease type specific selector or multiples separated by comma , (defaults: h1,h2,h3,h4)\nSelectors: ')
+	if not selectors.strip():
+	   	return ['h1','h2','h3','h4']
+	return selectors.split(',')
+
+def keywords_pattren(keywords):
+	if len(keywords) == 1:
+		return "[contains(.,'"+keywords[0]+"')]"
+	pattren = ""
+	for key in keywords:
+		pattren+=  "contains(.,'"+key+"') or " 
+	return "["+pattren[:-4]+"]"
+		
+def selectors_pattren(slist):
+	if len(slist) == 1:
+		return ".//"+slist[0]
+	pattren = ""
+	for key in slist:
+		pattren+=  ".//"+key+ " | "
+	return "("+pattren[:-3]+")"
+
+greet()
+url = get_url()
+words = get_keywords()
+tags = get_selectors()
+
+console.print('\n\nLOADING PAGE..', style='bold green')
+page = requests.get(url)
+tree = html.fromstring(page.content)
+
+results = tree.xpath(selectors_pattren(tags)+keywords_pattren(words))
+
+if len(results) == 0:
+	console.print('\n\nno results were found!', style='bold red')
+
+else:
+	console.print('\n\nFound '+str(len(results))+' Match', style='bold green')
+	table = Table(show_header=True, header_style="bold yellow")
+	table.add_column("ID", style="dim", width=4)
+	table.add_column("Selector", width=12)
+	table.add_column("Content")
+	
+	id = 1
+	for r in results:
+		table.add_row(str(id), r.tag,r.text_content()+".")
+		id+=1
+	console.print(table)
+we = input("")
